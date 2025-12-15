@@ -6,15 +6,260 @@
     <title>Flow Vision V12 - Chaos Theory</title>
     <!-- 引入像素字体 -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <!-- 引入样式文件 -->
-    <link rel="stylesheet" href="css/style.css">
+
+    <!-- ✅ 修复：直接将 CSS 写在这里，确保一定能加载 -->
+    <style>
+        :root {
+            --neon-green: #0f0; /* 主要界面色 */
+            --neon-red: #ff2a2a; /* 警告色 */
+            --neon-blue: #0ff; /* 辅助色 */
+            --bg-color: #000; /* 背景色 */
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg-color);
+            font-family: 'VT323', monospace;
+            overflow: hidden; /* 防止滚动条 */
+            color: var(--neon-green);
+            user-select: none; /* 禁止选择文本 */
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 视频与画布重叠布局 */
+        #webcam {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* 镜像翻转 */
+            z-index: 0;
+            filter: contrast(1.2) brightness(0.7) grayscale(0.5);
+        }
+
+        #output_canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            transform: scaleX(-1);
+            image-rendering: pixelated;
+        }
+
+        /* --- 加载界面 --- */
+        #loading {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glitch-wrapper {
+            position: relative;
+        }
+
+        .glitch {
+            font-size: 60px;
+            color: var(--neon-green);
+            text-shadow: 2px 0 var(--neon-red), -2px 0 var(--neon-blue);
+            animation: glitch-anim 1s infinite linear alternate-reverse;
+        }
+
+        .loader-bar {
+            width: 300px;
+            height: 10px;
+            border: 2px solid var(--neon-green);
+            margin: 20px 0;
+            padding: 2px;
+            box-shadow: 0 0 10px rgba(0,255,0,0.5);
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: var(--neon-green);
+            width: 0%;
+            animation: loading-fill 3s forwards;
+        }
+
+        #loading-log {
+            color: #999;
+            font-size: 18px;
+            margin-top: 10px;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        /* --- 开始遮罩 --- */
+        #start-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 200;
+            display: none; /* 初始隐藏，JS加载完后控制显示 */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cyber-panel {
+            border: 4px solid var(--neon-green);
+            padding: 40px 60px;
+            text-align: center;
+            background: rgba(0, 20, 0, 0.8);
+            box-shadow: 0 0 30px var(--neon-green), inset 0 0 15px rgba(0,255,0,0.3);
+        }
+
+            .cyber-panel h1 {
+                font-size: 48px;
+                margin: 10px 0 20px;
+                letter-spacing: 5px;
+                color: #fff;
+            }
+
+            .cyber-panel p {
+                font-size: 24px;
+                margin-bottom: 10px;
+                color: var(--neon-blue);
+            }
+
+        .start-btn {
+            background: var(--neon-green);
+            color: #000;
+            border: none;
+            padding: 10px 30px;
+            font-family: 'VT323', monospace;
+            font-size: 30px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.2s, box-shadow 0.2s;
+            text-shadow: 1px 1px #000;
+        }
+
+            .start-btn:hover {
+                background: #fff;
+                box-shadow: 0 0 20px #fff;
+            }
+
+        /* --- HUD --- */
+        .ui-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .hud-top {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .hud-bottom {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: right;
+        }
+
+        .hud-item {
+            font-size: 24px;
+            text-shadow: 1px 1px #000;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border: 1px solid var(--neon-green);
+            box-shadow: 0 0 5px rgba(0,255,0,0.3);
+            color: #fff;
+        }
+
+        #gravity-val {
+            color: var(--neon-blue);
+        }
+
+        #music-status {
+            color: var(--neon-blue);
+        }
+
+        #infection-warning {
+            color: var(--neon-red);
+            font-size: 32px;
+            display: none;
+            background: #000;
+            border: 2px solid var(--neon-red);
+            padding: 5px 20px;
+            text-shadow: 2px 2px #000;
+            box-shadow: 0 0 15px var(--neon-red);
+        }
+
+        .blink {
+            animation: blink 0.5s infinite;
+        }
+
+        /* --- 动画 --- */
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes glitch-anim {
+            0% {
+                transform: translate(0)
+            }
+
+            20% {
+                transform: translate(-2px, 2px)
+            }
+
+            40% {
+                transform: translate(-2px, -2px)
+            }
+
+            60% {
+                transform: translate(2px, 2px)
+            }
+
+            80% {
+                transform: translate(2px, -2px)
+            }
+
+            100% {
+                transform: translate(0)
+            }
+        }
+
+        @keyframes loading-fill {
+            0% {
+                width: 0%;
+            }
+
+            100% {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <!-- 摄像头视频流 (底层) -->
+    <!-- 摄像头源 (隐藏) -->
     <video id="webcam" autoplay playsinline></video>
 
-    <!-- 核心绘图画布 (顶层，所有视觉效果在此绘制) -->
+    <!-- 核心画布 (显示) -->
     <canvas id="output_canvas"></canvas>
 
     <!-- 加载界面 -->
@@ -23,10 +268,10 @@
             <div class="glitch" data-text="SYSTEM_INIT...">SYSTEM_INIT...</div>
         </div>
         <div class="loader-bar"><div class="bar-fill"></div></div>
-        <div id="loading-log">Initializing modules...</div>
+        <div id="loading-log">Connecting to Neural Net...</div>
     </div>
 
-    <!-- 开始按钮遮罩 (点击后开始交互) -->
+    <!-- 开始按钮遮罩 -->
     <div id="start-overlay">
         <div class="cyber-panel">
             <h1>NEURAL LINK READY</h1>
@@ -35,11 +280,11 @@
         </div>
     </div>
 
-    <!-- HUD 状态显示 (右上角和左下角) -->
+    <!-- HUD 状态栏 -->
     <div class="ui-layer">
         <div class="hud-top">
             <div class="hud-item">GRAVITY: <span id="gravity-val">STABLE</span></div>
-            <div id="infection-warning" class="blink">⚠️ ALERT: UNSTABLE ⚠️</div>
+            <div id="infection-warning" class="blink">⚠️ BIO-HAZARD DETECTED ⚠️</div>
         </div>
         <div class="hud-bottom">
             <div class="hud-item">ENTITIES: <span id="particle-count">0</span></div>
@@ -47,7 +292,7 @@
         </div>
     </div>
 
-    <!-- 引入核心 JavaScript 文件 (type="module" 允许 import/export) -->
+    <!-- 引用 JS 文件 (请确保 js/app.js 存在且内容正确) -->
     <script type="module" src="js/app.js"></script>
 </body>
 </html>
