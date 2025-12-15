@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Vision V12 - Chaos Theory</title>
+    <!-- 引入像素字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- 摄像头视频流 (底层) -->
+    <video id="webcam" autoplay playsinline></video>
+
+    <!-- 核心绘图画布 (顶层，所有视觉效果在此绘制) -->
+    <canvas id="output_canvas"></canvas>
+
+    <!-- 加载界面 -->
+    <div id="loading">
+        <div class="glitch-wrapper">
+            <div class="glitch" data-text="SYSTEM_INIT...">SYSTEM_INIT...</div>
+        </div>
+        <div class="loader-bar"><div class="bar-fill"></div></div>
+        <div id="loading-log">Initializing modules...</div>
+    </div>
+
+    <!-- 开始按钮遮罩 (点击后开始交互) -->
+    <div id="start-overlay">
+        <div class="cyber-panel">
+            <h1>NEURAL LINK READY</h1>
+            <p>GESTURES: [PINCH] Create | [OPEN] Push | [TILT] Gravity | [FIST] Purge</p>
+            <button class="start-btn">>>> START SIMULATION <<<</button>
+        </div>
+    </div>
+
+    <!-- HUD 状态显示 (右上角和左下角) -->
+    <div class="ui-layer">
+        <div class="hud-top">
+            <div class="hud-item">GRAVITY: <span id="gravity-val">STABLE</span></div>
+            <div id="infection-warning" class="blink">⚠️ ALERT: UNSTABLE ⚠️</div>
+        </div>
+        <div class="hud-bottom">
+            <div class="hud-item">ENTITIES: <span id="particle-count">0</span></div>
+            <div class="hud-item">MUSIC: <span id="music-status">OFFLINE</span></div>
+        </div>
+    </div>
+
+    <!-- 引入核心 JavaScript 文件 (type="module" 允许 import/export) -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
